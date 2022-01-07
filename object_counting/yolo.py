@@ -9,14 +9,19 @@ import numpy as np
 from tensorflow.python.keras import backend as K
 from tensorflow.keras.models import load_model
 import tensorflow as tf
-from yolo4.model import yolo_eval, Mish
-from yolo4.utils import letterbox_image
+#from yolo4.model import yolo_eval, Mish
+#from yolo4.utils import letterbox_image
+from yolo3.model import yolo_eval
+from yolo3.utils import letterbox_image
+
 import os
-# from keras.utils import multi_gpu_model
+from keras.utils import multi_gpu_model
 tf.compat.v1.disable_eager_execution()
+
+
 class YOLO(object):
     def __init__(self):
-        self.model_path = 'model_data/yolo4.h5'
+        self.model_path = 'model_data/yolov3_weight.h5'
         self.anchors_path = 'model_data/yolo_anchors.txt'
         self.classes_path = 'model_data/coco_classes.txt'
         self.gpu_num = 1
@@ -25,9 +30,10 @@ class YOLO(object):
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
-        self.model_image_size = (416, 416)  # fixed size or (None, None)
+        self.model_image_size = (608, 608)  # fixed size or (None, None)
         self.is_fixed_size = self.model_image_size != (None, None)
         self.boxes, self.scores, self.classes = self.generate()
+       
 
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
@@ -48,8 +54,8 @@ class YOLO(object):
         model_path = os.path.expanduser(self.model_path)
         assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
 
-        self.yolo_model = load_model(model_path, custom_objects={'Mish': Mish}, compile=False)
-
+        self.yolo_model = load_model(model_path, compile=False)
+        #self.yolo_model = load_model(model_path, custom_objects={'Mish': Mish}, compile=False)
         print('{} model, anchors, and classes loaded.'.format(model_path))
 
         # Generate colors for drawing bounding boxes.
@@ -65,15 +71,14 @@ class YOLO(object):
 
         # Generate output tensor targets for filtered bounding boxes.
         self.input_image_shape = K.placeholder(shape=(2, ))
-        # if self.gpu_num>=2:
-        #     self.yolo_model = multi_gpu_model(self.yolo_model, gpus=self.gpu_num)
+        if self.gpu_num>=2:
+             self.yolo_model = multi_gpu_model(self.yolo_model, gpus=self.gpu_num)
         boxes, scores, classes = yolo_eval(self.yolo_model.output, self.anchors,
                 len(self.class_names), self.input_image_shape,
                 score_threshold=self.score, iou_threshold=self.iou)
         return boxes, scores, classes
 
     def detect_image(self, image):
-
         if self.is_fixed_size:
             assert self.model_image_size[0]%32 == 0, 'Multiples of 32 required'
             assert self.model_image_size[1]%32 == 0, 'Multiples of 32 required'
