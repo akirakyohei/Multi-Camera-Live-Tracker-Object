@@ -8,10 +8,10 @@
 $cd object_countin/
 $python app.py <br/>
 
-3. Kết nối camera:
--Kết nối thiết bị thật bằng cách 
-+thay đổi địa chỉ ip camera trong file object_counting/camera_client_0.py
-+chạy lệnh $python object_counting/camera_client_0.py
-+tương tự nếu có nhiều hơn 1 chạy với object_counting/camera_client_1.py 
--giả lập video camera gửi về
-+$python /video_streamer/video_streamer.py -p 5555 -v video_path_1 -p 5566 -v video_path_2
+3. Kết nối camera: <br/>
+-Kết nối thiết bị thật bằng cách <br/>
++thay đổi địa chỉ ip camera trong file object_counting/camera_client_0.py <br/>
++chạy lệnh $python object_counting/camera_client_0.py <br/>
++tương tự nếu có nhiều hơn 1 chạy với object_counting/camera_client_1.py <br/>
+-giả lập video camera gửi về <br/>
++$python /video_streamer/video_streamer.py -p 5555 -v video_path_1 -p 5566 -v video_path_2 <br/>
