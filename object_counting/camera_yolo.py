@@ -18,12 +18,11 @@ warnings.filterwarnings('ignore')
 
 
 class Camera(BaseCamera):
-    def __init__(self, feed_type, device, port_list,yolo_model):
+    def __init__(self, feed_type, device, port_list):
         super(Camera, self).__init__(feed_type, device, port_list)
-        self.yolo = YOLO(yolo_model)
 
     @staticmethod
-    def yolo_frames(self,unique_name):
+    def yolo_frames(unique_name):
         device = unique_name[1]
 
         tracking = True
@@ -44,7 +43,7 @@ class Camera(BaseCamera):
             metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
             tracker = Tracker(metric)
 
-        
+        yolo = YOLO()
         nms_max_overlap = 1.0
 
         num_frames = 0
@@ -65,17 +64,12 @@ class Camera(BaseCamera):
             if num_frames % 2 != 0:  # only process frames at set number of frame intervals
                 continue
 
-            #image = Image.fromarray(frame)
             image = Image.fromarray(frame[..., ::-1])  # convert bgr to rgb
-            boxes, confidence, classes = self.yolo.detect_image(image)
-            if tracking:
-                features = encoder(frame, boxes)
+            boxes, confidence, classes = yolo.detect_image(image)
+            detections = []
+            features = encoder(frame, boxes)
 
-                detections = [Detection(bbox, confidence, cls, feature) for bbox, confidence, cls, feature in
-                              zip(boxes, confidence, classes, features)]
-            else:
-                detections = [Detection_YOLO(bbox, confidence, cls) for bbox, confidence, cls in
-                              zip(boxes, confidence, classes)]
+            detections = [Detection(bbox, 1.0, cls, feature) for bbox, cls, feature in zip(boxes, classes, features)]
             # Run non-maxima suppression.
             boxes = np.array([d.tlwh for d in detections])
             scores = np.array([d.confidence for d in detections])

@@ -7,16 +7,16 @@ import colorsys
 
 import numpy as np
 from tensorflow.python.keras import backend as K
+from tensorflow.keras.models import load_model
 import tensorflow as tf
-from copy import deepcopy
 from yolo4.model import yolo_eval, Mish
 from yolo4.utils import letterbox_image
 import os
 # from keras.utils import multi_gpu_model
 tf.compat.v1.disable_eager_execution()
 class YOLO(object):
-    def __init__(self,yolo_model):
-        # self.model_path = 'model_data/yolo4.h5'
+    def __init__(self):
+        self.model_path = 'model_data/yolo4.h5'
         self.anchors_path = 'model_data/yolo_anchors.txt'
         self.classes_path = 'model_data/coco_classes.txt'
         self.gpu_num = 1
@@ -28,8 +28,7 @@ class YOLO(object):
         self.model_image_size = (608, 608)  # fixed size or (None, None)
         self.is_fixed_size = self.model_image_size != (None, None)
         self.boxes, self.scores, self.classes = self.generate()
-        print(yolo_model)
-        self.yolo_model =yolo_model
+
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
         with open(classes_path) as f:
@@ -46,12 +45,12 @@ class YOLO(object):
         return anchors
 
     def generate(self):
-        # model_path = os.path.expanduser(self.model_path)
-        # assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
+        model_path = os.path.expanduser(self.model_path)
+        assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
 
-        # self.yolo_model = load_model(model_path, custom_objects={'Mish': Mish}, compile=False)
+        self.yolo_model = load_model(model_path, custom_objects={'Mish': Mish}, compile=False)
 
-       # print('{} model, anchors, and classes loaded.'.format(model_path))
+        print('{} model, anchors, and classes loaded.'.format(model_path))
 
         # Generate colors for drawing bounding boxes.
         hsv_tuples = [(x / len(self.class_names), 1., 1.)

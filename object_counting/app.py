@@ -1,9 +1,5 @@
 from importlib import import_module
 from flask import Flask, render_template, Response
-import os
-from tensorflow.keras.models import load_model
-from yolo4.model import Mish
-import tensorflow as tf
 import cv2
 import time
 
@@ -59,18 +55,9 @@ def video_feed(feed_type, device):
 
     elif feed_type == 'yolo':
         camera_stream = import_module('camera_yolo').Camera
-        yolo_model_copy = yolo_model
-        return Response(gen(camera_stream=camera_stream(feed_type, device, port_list,yolo_model_copy), feed_type=feed_type, device=device),
+        return Response(gen(camera_stream=camera_stream(feed_type, device, port_list), feed_type=feed_type, device=device),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == '__main__':
-    path = 'model_data/yolo4.h5'
-    model_path = os.path.expanduser(path)
-    assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
-
-    yolo_model = load_model(model_path, custom_objects={'Mish': Mish}, compile=False)
-
-    print('{} model, anchors, and classes loaded.'.format(model_path))
-
     app.run(host='0.0.0.0', threaded=True)
