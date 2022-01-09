@@ -157,9 +157,9 @@ class BaseCamera:
             print('Starting server thread for device {} at port {}.'.format(device, port))
             cls.server_thread(unique_name, port)
 
-        elif feed_type == 'yolo':
+        elif feed_type == 'single':
             """Camera background thread."""
-            print('Starting YOLO thread for device {}.'.format(device))
+            # print('Starting YOLO thread for device {}.'.format(device))
             cls.yolo_thread(unique_name)
 
         BaseCamera.threads[unique_name] = None
